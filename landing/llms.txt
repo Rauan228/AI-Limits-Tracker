@@ -1,6 +1,6 @@
 # AI Limits Tracker
 
-> Open-source tool to track the usage limits of all your Claude, ChatGPT and Gemini accounts in one place — including several accounts of the same service. Available as a mobile app, a self-hosted web panel (PWA) and a Chrome extension.
+> Open-source tool to track the usage limits of all your AI accounts in one place — Claude, ChatGPT, Gemini, Cursor, GitHub Copilot, Perplexity, Grok, Mistral, DeepSeek, Poe, or any other service via a pasted cURL — including several accounts of the same service. Available as a mobile app, a self-hosted web panel (PWA) and a Chrome extension.
 
 AI Limits Tracker solves a gap that other usage trackers miss: people who own more than one account per AI service (for example two Claude accounts and two ChatGPT accounts). Each account is tracked in full isolation — its own credentials, token refresh and history — so their limits can be compared side by side on one screen.
 
@@ -8,6 +8,12 @@ AI Limits Tracker solves a gap that other usage trackers miss: people who own mo
 - Claude: 5-hour session window, weekly window, Opus/Sonnet weekly, extra spend, plan (Pro / Max / Max 20x).
 - ChatGPT: Codex 5-hour and weekly limits, credit balance, plan (Plus / Pro / Team).
 - Gemini: session and weekly quota windows.
+- Cursor: premium (fast) request usage.
+- GitHub Copilot: monthly premium-request usage.
+- Perplexity: Pro search quota.
+- Grok: request-window limits.
+- Mistral (Le Chat), DeepSeek, Poe (compute points).
+- Any other service: the user pastes a cURL of the request that returns usage, and the app auto-detects the percentage used and the reset time (a declarative "recipe" engine).
 
 ## Key properties
 - Multiple accounts per service, fully isolated.
