@@ -1,0 +1,13 @@
+{
+  "name": "ai-limits-tracker-server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Self-hosted server + web panel for AI Limits Tracker. Node 22+ only, zero runtime dependencies.",
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "scripts": {
+    "start": "node dist/server.mjs"
+  }
+}

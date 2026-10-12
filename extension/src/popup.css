@@ -1,0 +1,28 @@
+* { box-sizing: border-box; margin: 0; }
+body { width: 320px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f2f1ed; color: #18181b; }
+.popup { padding: 12px; }
+header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.brand { font-weight: 800; font-size: 16px; letter-spacing: -0.3px; }
+.brand span { color: #1f9d74; }
+.refresh { width: 32px; height: 32px; border: 0; background: #eceae4; border-radius: 50%; cursor: pointer; font-size: 16px; color: #18181b; }
+.refresh.spin { animation: spin 0.9s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.list { display: flex; flex-direction: column; gap: 8px; }
+.row { display: flex; align-items: center; gap: 11px; background: #fbfaf8; border: 1px solid #e8e6e0; border-radius: 16px; padding: 11px 13px; }
+.row.off { opacity: 0.6; }
+.meta { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.meta b { font-size: 14px; }
+.meta span { font-size: 11.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.muted { color: #71717a; }
+.warn { color: #ef4444; }
+.right { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.reset { font-size: 10px; color: #71717a; }
+.switch { position: relative; width: 40px; height: 24px; flex: none; cursor: pointer; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.switch i { position: absolute; inset: 0; background: #d4d4d8; border-radius: 999px; transition: 0.2s; }
+.switch i::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; background: #fff; border-radius: 50%; transition: 0.2s; }
+.switch input:checked + i { background: #1f9d74; }
+.switch input:checked + i::after { transform: translateX(16px); }
+footer { margin-top: 14px; display: flex; flex-direction: column; gap: 3px; text-align: center; }
+footer span { font-size: 10.5px; color: #a1a1aa; }
+footer a { font-size: 11.5px; color: #1f9d74; text-decoration: none; font-weight: 600; }

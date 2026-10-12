@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://rauan228.github.io/AI-Limits-Tracker/sitemap.xml

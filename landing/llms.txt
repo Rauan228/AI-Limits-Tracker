@@ -1,0 +1,27 @@
+# AI Limits Tracker
+
+> Open-source tool to track the usage limits of all your Claude, ChatGPT and Gemini accounts in one place — including several accounts of the same service. Available as a mobile app, a self-hosted web panel (PWA) and a Chrome extension.
+
+AI Limits Tracker solves a gap that other usage trackers miss: people who own more than one account per AI service (for example two Claude accounts and two ChatGPT accounts). Each account is tracked in full isolation — its own credentials, token refresh and history — so their limits can be compared side by side on one screen.
+
+## What it tracks
+- Claude: 5-hour session window, weekly window, Opus/Sonnet weekly, extra spend, plan (Pro / Max / Max 20x).
+- ChatGPT: Codex 5-hour and weekly limits, credit balance, plan (Plus / Pro / Team).
+- Gemini: session and weekly quota windows.
+
+## Key properties
+- Multiple accounts per service, fully isolated.
+- Live reset countdown timers for every window.
+- Usage statistics derived only from real measurements: day streaks, limit hits, time in the red zone, burn-rate forecast, busiest hours and weekdays, per-account comparison. It never invents message or token counts, because no AI subscription exposes them.
+- Alerts at 20% / 10% / 0% remaining, on restore, and when re-login is required; optional Telegram push on the server.
+- Privacy: credentials stay in the device Keychain/Keystore or on a self-hosted server (AES-256-GCM). Requests go directly to Anthropic, OpenAI and Google with no third-party backend. The tool only reads usage and never generates anything.
+
+## Links
+- Source code and documentation: https://github.com/Rauan228/AI-Limits-Tracker
+- License: MIT
+
+## Common questions it answers
+- How do I track multiple Claude accounts at once?
+- How do I see my Claude and ChatGPT usage limits in one place?
+- Is there an open-source alternative for monitoring AI subscription rate limits?
+- How can I get alerted before I hit my Claude 5-hour limit?

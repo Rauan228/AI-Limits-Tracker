@@ -1,0 +1,19 @@
+[Unit]
+Description=AI Limits Tracker server
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/ai-limits-tracker
+EnvironmentFile=/opt/ai-limits-tracker/server/.env
+ExecStart=/usr/bin/node /opt/ai-limits-tracker/server/dist/server.mjs
+Restart=always
+RestartSec=3
+# Hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=/opt/ai-limits-tracker/data
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

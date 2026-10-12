@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AI Limits Tracker — Track Claude, ChatGPT & Gemini usage limits (multiple accounts)</title>
+<meta name="description" content="Open-source tracker for the usage limits of all your Claude, ChatGPT and Gemini accounts in one place — including several accounts of the same service. Live reset timers, low-limit alerts and usage stats. Mobile app, self-hosted web panel and Chrome extension. Private: tokens never leave your device." />
+<meta name="keywords" content="Claude usage limit tracker, track Claude limits, multiple Claude accounts, ChatGPT limit tracker, Claude rate limit, Claude Max 5 hour limit, ChatGPT Codex usage, Gemini usage limits, AI usage tracker, monitor AI subscription limits" />
+<link rel="canonical" href="https://rauan228.github.io/AI-Limits-Tracker/" />
+<meta name="robots" content="index, follow" />
+<meta name="author" content="Rauan" />
+<meta name="theme-color" content="#1f9d74" />
+
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="AI Limits Tracker" />
+<meta property="og:title" content="AI Limits Tracker — all your Claude, ChatGPT & Gemini limits in one place" />
+<meta property="og:description" content="Track the usage limits of several Claude, ChatGPT and Gemini accounts at once. Live reset timers, alerts and stats. Mobile app, self-hosted web panel and Chrome extension. Open source." />
+<meta property="og:url" content="https://rauan228.github.io/AI-Limits-Tracker/" />
+<meta property="og:image" content="https://rauan228.github.io/AI-Limits-Tracker/og-image.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="AI Limits Tracker — Claude, ChatGPT & Gemini usage limits, multiple accounts" />
+<meta name="twitter:description" content="Open-source tracker for the limits of all your AI accounts in one place. Mobile app, web panel and Chrome extension." />
+<meta name="twitter:image" content="https://rauan228.github.io/AI-Limits-Tracker/og-image.png" />
+
+<link rel="icon" href="favicon.png" type="image/png" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "AI Limits Tracker",
+  "operatingSystem": "iOS, Android, Web, Chrome",
+  "applicationCategory": "DeveloperApplication",
+  "description": "Open-source tracker for the usage limits of all your Claude, ChatGPT and Gemini accounts in one place, including several accounts of the same service. Live reset timers, low-limit alerts and usage statistics.",
+  "url": "https://rauan228.github.io/AI-Limits-Tracker/",
+  "downloadUrl": "https://github.com/Rauan228/AI-Limits-Tracker",
+  "softwareVersion": "1.0.0",
+  "license": "https://opensource.org/licenses/MIT",
+  "author": { "@type": "Person", "name": "Rauan", "url": "https://github.com/Rauan228" },
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "featureList": [
+    "Track multiple Claude, ChatGPT and Gemini accounts at once",
+    "Several accounts of the same service, fully isolated",
+    "Live limit reset countdown timers",
+    "Low-limit, exhausted and re-login alerts",
+    "Usage statistics: streaks, burn-rate forecast, busiest hours",
+    "Private: credentials stay on your own device or server"
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    { "@type": "Question", "name": "Can I track multiple Claude accounts at once?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes. AI Limits Tracker is built for the multi-account case. You can add any number of Claude accounts (and ChatGPT and Gemini) and each one is fully isolated with its own credentials, token refresh and history, so two Claude accounts show two different numbers side by side." } },
+    { "@type": "Question", "name": "How do I track my ChatGPT and Claude usage limits in one place?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Install AI Limits Tracker as a mobile app, a self-hosted web panel you can add to your phone's home screen, or a Chrome extension. It shows Claude's 5-hour and weekly windows, ChatGPT's Codex limits and Gemini's quotas on a single screen with live reset timers." } },
+    { "@type": "Question", "name": "Is it safe? Where are my credentials stored?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Credentials never leave your own device or server. On mobile they are kept in the iOS Keychain / Android Keystore; on the self-hosted server they are AES-256-GCM encrypted. Requests go straight to Anthropic, OpenAI and Google with no third-party backend. The tool only reads your usage, it never generates anything." } },
+    { "@type": "Question", "name": "Is AI Limits Tracker free and open source?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes, it is MIT-licensed and free. The source is on GitHub and you self-host the web panel yourself." } }
+  ]
+}
+</script>
+<style>
+  *{box-sizing:border-box;margin:0}
+  :root{--bg:#f2f1ed;--card:#fbfaf8;--border:#e8e6e0;--text:#18181b;--muted:#52525b;--ring:#1f9d74;--ink:#18181b}
+  html{scroll-behavior:smooth}
+  body{font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);line-height:1.55;-webkit-font-smoothing:antialiased}
+  a{color:inherit}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+  header.nav{display:flex;align-items:center;justify-content:space-between;padding:20px;max-width:1040px;margin:0 auto}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px;letter-spacing:-.4px}
+  .brand img{width:30px;height:30px}
+  .nav-links{display:flex;gap:22px;align-items:center;font-size:14px;font-weight:500}
+  .nav-links a{text-decoration:none;color:var(--muted)}
+  .nav-links a:hover{color:var(--text)}
+  .btn{display:inline-flex;align-items:center;gap:8px;background:var(--ink);color:#fff;text-decoration:none;font-weight:700;padding:11px 18px;border-radius:12px;font-size:14px;border:0;cursor:pointer}
+  .btn.ghost{background:var(--card);color:var(--text);border:1px solid var(--border)}
+  .btn:hover{opacity:.92}
+  .hero{text-align:center;padding:60px 0 50px}
+  .pill{display:inline-flex;align-items:center;gap:8px;background:#e7f6ec;color:#166534;font-weight:600;font-size:13px;padding:6px 14px;border-radius:999px;margin-bottom:22px}
+  .pill i{width:7px;height:7px;border-radius:50%;background:var(--ring);display:inline-block}
+  h1{font-size:clamp(34px,6vw,58px);font-weight:800;letter-spacing:-1.8px;line-height:1.05;margin-bottom:20px}
+  h1 .accent{background:linear-gradient(90deg,#e2683c,#1f9d74);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .lead{font-size:clamp(16px,2.4vw,20px);color:var(--muted);max-width:680px;margin:0 auto 32px}
+  .cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+  .providers{display:flex;gap:10px;justify-content:center;margin-top:34px;flex-wrap:wrap}
+  .prov{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--border);border-radius:999px;padding:8px 16px;font-weight:600;font-size:14px}
+  .prov b{width:10px;height:10px;border-radius:50%}
+  section{padding:56px 0}
+  .sec-title{text-align:center;font-size:clamp(26px,4vw,38px);font-weight:800;letter-spacing:-1px;margin-bottom:14px}
+  .sec-sub{text-align:center;color:var(--muted);max-width:620px;margin:0 auto 44px;font-size:16px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:26px}
+  .card .ic{width:44px;height:44px;border-radius:12px;background:#e7f6ec;display:grid;place-items:center;margin-bottom:16px;font-size:22px}
+  .card h3{font-size:18px;font-weight:700;margin-bottom:8px;letter-spacing:-.3px}
+  .card p{color:var(--muted);font-size:14.5px}
+  .ways{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+  .way{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:26px;text-align:center}
+  .way .emoji{font-size:34px}
+  .way h3{margin:12px 0 6px;font-size:19px}
+  .way p{color:var(--muted);font-size:14px;min-height:40px}
+  .way small{display:block;margin-top:12px;color:var(--ring);font-weight:700;font-size:13px}
+  pre{background:var(--ink);color:#e4e4e7;border-radius:16px;padding:22px;overflow-x:auto;font-size:13.5px;line-height:1.7;max-width:720px;margin:0 auto;font-family:ui-monospace,Menlo,Consolas,monospace}
+  pre .c{color:#8a8a94}
+  pre .g{color:#5fd0a0}
+  .faq{max-width:760px;margin:0 auto}
+  details{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:4px 20px;margin-bottom:12px}
+  summary{font-weight:700;font-size:16px;padding:16px 0;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center}
+  summary::-webkit-details-marker{display:none}
+  summary::after{content:'+';font-size:22px;color:var(--muted);font-weight:400}
+  details[open] summary::after{content:'−'}
+  details p{color:var(--muted);padding-bottom:18px;font-size:15px}
+  footer{border-top:1px solid var(--border);padding:34px 20px;text-align:center;color:var(--muted);font-size:14px}
+  footer a{color:var(--ring);font-weight:600;text-decoration:none}
+  .final{text-align:center;background:var(--ink);color:#fff;border-radius:28px;padding:54px 24px;margin:20px}
+  .final h2{font-size:clamp(26px,4vw,38px);letter-spacing:-1px;margin-bottom:14px}
+  .final p{color:#a1a1aa;margin-bottom:26px;max-width:520px;margin-left:auto;margin-right:auto}
+  .final .btn{background:#fff;color:var(--ink)}
+</style>
+</head>
+<body>
+<header class="nav">
+  <a class="brand" href="/AI-Limits-Tracker/"><img src="favicon.png" alt="AI Limits Tracker logo" /> AI Limits</a>
+  <nav class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#how">How it works</a>
+    <a href="#faq">FAQ</a>
+    <a class="btn" href="https://github.com/Rauan228/AI-Limits-Tracker">★ GitHub</a>
+  </nav>
+</header>
+
+<main>
+<section class="hero wrap">
+  <span class="pill"><i></i> Open source · MIT · self-hosted</span>
+  <h1>All your <span class="accent">Claude, ChatGPT &amp; Gemini</span><br />limits in one place</h1>
+  <p class="lead">Track the usage limits of every AI account you own — including <strong>several accounts of the same service</strong> — with live reset timers, low-limit alerts and real usage stats. Your tokens never leave your own device.</p>
+  <div class="cta">
+    <a class="btn" href="https://github.com/Rauan228/AI-Limits-Tracker">★ Star on GitHub</a>
+    <a class="btn ghost" href="#how">Self-host in 2 minutes</a>
+  </div>
+  <div class="providers">
+    <span class="prov"><b style="background:#e2683c"></b> Claude</span>
+    <span class="prov"><b style="background:#18181b"></b> ChatGPT</span>
+    <span class="prov"><b style="background:#4f46e5"></b> Gemini</span>
+  </div>
+</section>
+
+<section id="features" class="wrap">
+  <h2 class="sec-title">Built for people with more than one AI account</h2>
+  <p class="sec-sub">Every other tracker assumes one account per service. This one doesn't — two Claude accounts, two ChatGPT accounts, all on one screen.</p>
+  <div class="grid">
+    <div class="card"><div class="ic">👥</div><h3>Multiple accounts, isolated</h3><p>Add any number of Claude, ChatGPT or Gemini accounts. Each keeps its own credentials, token refresh and history — no mixing, no logging in and out.</p></div>
+    <div class="card"><div class="ic">⏱️</div><h3>Live reset timers</h3><p>See exactly when each 5-hour and weekly window resets, counting down in real time. Never get surprised by a wall mid-task again.</p></div>
+    <div class="card"><div class="ic">📊</div><h3>Honest usage stats</h3><p>Day streaks, limit hits, time in the red zone, burn-rate forecast and busiest hours — all from real measurements. No invented message counts.</p></div>
+    <div class="card"><div class="ic">🔔</div><h3>Low-limit alerts</h3><p>Get notified at 20%, 10% and 0% remaining, on restore, and when a session needs re-login. Optional Telegram push from the server.</p></div>
+    <div class="card"><div class="ic">🔒</div><h3>Private by design</h3><p>Tokens live only in your device's Keychain/Keystore or your own encrypted server. Requests go straight to the AI providers — no third-party backend.</p></div>
+    <div class="card"><div class="ic">📱</div><h3>Install anywhere</h3><p>A mobile app, a self-hosted web panel you add to your home screen like a native app, and a Chrome extension for a glance from the toolbar.</p></div>
+  </div>
+</section>
+
+<section id="ways" class="wrap">
+  <h2 class="sec-title">Three ways to use it</h2>
+  <p class="sec-sub">Same engine, your choice of surface.</p>
+  <div class="ways">
+    <div class="way"><div class="emoji">📱</div><h3>Mobile app</h3><p>Your daily driver. Expo / React Native, unlimited isolated accounts.</p><small>iOS &amp; Android</small></div>
+    <div class="way"><div class="emoji">🖥️</div><h3>Web panel</h3><p>Self-hosted PWA with 24/7 background polling. Install to your phone's home screen.</p><small>Node 22, zero deps</small></div>
+    <div class="way"><div class="emoji">🧩</div><h3>Chrome extension</h3><p>A glance from the toolbar using your browser's own session.</p><small>One account per profile</small></div>
+  </div>
+</section>
+
+<section id="how" class="wrap">
+  <h2 class="sec-title">Self-host in two minutes</h2>
+  <p class="sec-sub">One Node file, no runtime dependencies. Runs on any small VPS.</p>
+<pre><span class="c"># clone &amp; build</span>
+git clone https://github.com/Rauan228/AI-Limits-Tracker.git
+cd AI-Limits-Tracker && npm install
+npm run build:server && npm run build:web
+
+<span class="c"># configure &amp; run</span>
+cp server/.env.example server/.env   <span class="c"># set a password</span>
+WEB_DIR=web/dist DATA_DIR=./data node server/dist/server.mjs
+<span class="g"># → open http://localhost:8795 on any device</span></pre>
+  <p style="text-align:center;margin-top:24px"><a class="btn" href="https://github.com/Rauan228/AI-Limits-Tracker#web-panel">Full deploy guide →</a></p>
+</section>
+
+<section id="faq" class="wrap">
+  <h2 class="sec-title">Frequently asked questions</h2>
+  <div class="faq">
+    <details open><summary>Can I track multiple Claude accounts at once?</summary><p>Yes — that's the whole point. Add any number of Claude accounts (and ChatGPT and Gemini). Each is fully isolated with its own credentials, token refresh and history, so two Claude accounts show two different numbers side by side.</p></details>
+    <details><summary>How do I see my Claude and ChatGPT limits in one place?</summary><p>Install the mobile app, the self-hosted web panel (which you can add to your phone's home screen), or the Chrome extension. It shows Claude's 5-hour and weekly windows, ChatGPT's Codex limits and Gemini's quotas on a single screen with live reset timers.</p></details>
+    <details><summary>Is it safe? Where are my credentials stored?</summary><p>They never leave your own device or server. On mobile they're in the iOS Keychain / Android Keystore; on the server they're AES-256-GCM encrypted. Requests go straight to Anthropic, OpenAI and Google — there's no third-party backend. The tool only reads your usage, it never generates anything, so it adds no load to your quota.</p></details>
+    <details><summary>Is it really free and open source?</summary><p>Yes. MIT-licensed, free, and the full source is on GitHub. You self-host it yourself and own all your data.</p></details>
+    <details><summary>Does it show how many messages or tokens I've used?</summary><p>No AI subscription exposes a message or token counter, so the app never invents one. It reads the percentage of each rate-limit window the service itself reports, and derives streaks, forecasts and charts from how that percentage changes over time.</p></details>
+  </div>
+</section>
+
+<div class="final">
+  <h2>Stop logging in and out just to check</h2>
+  <p>Put every AI limit you care about on one screen. Free, open source, yours to self-host.</p>
+  <a class="btn" href="https://github.com/Rauan228/AI-Limits-Tracker">★ Get it on GitHub</a>
+</div>
+</main>
+
+<footer>
+  <p>AI Limits Tracker — open-source usage-limit tracker for Claude, ChatGPT and Gemini.<br />
+  MIT © <a href="https://github.com/Rauan228">Rauan</a> · <a href="https://github.com/Rauan228/AI-Limits-Tracker">Source on GitHub</a></p>
+</footer>
+</body>
+</html>

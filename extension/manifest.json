@@ -1,0 +1,37 @@
+{
+  "manifest_version": 3,
+  "name": "AI Limits Tracker — Claude & ChatGPT usage",
+  "short_name": "AI Limits",
+  "description": "See the usage limits of all your Claude and ChatGPT accounts at a glance — several accounts per service, live reset timers, alerts.",
+  "version": "1.0.0",
+  "icons": {
+    "16": "icons/16.png",
+    "32": "icons/32.png",
+    "48": "icons/48.png",
+    "128": "icons/128.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "AI Limits Tracker",
+    "default_icon": {
+      "16": "icons/16.png",
+      "32": "icons/32.png"
+    }
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "permissions": ["storage", "alarms", "notifications"],
+  "host_permissions": [
+    "https://api.anthropic.com/*",
+    "https://claude.ai/*",
+    "https://console.anthropic.com/*",
+    "https://platform.claude.com/*",
+    "https://auth.openai.com/*",
+    "https://chatgpt.com/*",
+    "http://localhost:1455/*"
+  ],
+  "incognito": "split",
+  "homepage_url": "https://github.com/Rauan228/AI-Limits-Tracker"
+}
