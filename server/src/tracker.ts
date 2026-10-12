@@ -1,14 +1,29 @@
+import { createHash, randomBytes } from 'node:crypto';
 import type { AccountCredentials, ProviderType, UsageSnapshot } from '../../src/models/types';
 import { parseManualInput } from '../../src/services/curlParser';
+import { parseAuthCode } from '../../src/services/oauth/authCode';
+import { buildChatGPTAuthorizeUrl, exchangeChatGPTCode } from '../../src/services/oauth/chatgptOAuth';
+import { buildClaudeAuthorizeUrl, exchangeClaudeCode } from '../../src/services/oauth/claudeOAuth';
 import { bindingBucket, mergeWithPrevious } from '../../src/services/providers/common';
 import { getProvider } from '../../src/services/providers';
 import { PROVIDER_NAMES } from '../../src/constants/theme';
 import { notify } from './notify';
 import { ServerAccount, Store } from './store';
 
+const b64url = (buf: Buffer) => buf.toString('base64').replace(/=+$/, '').replace(/\+/g, '-').replace(/\//g, '_');
+
+interface PendingLogin {
+  provider: ProviderType;
+  verifier: string;
+  state: string;
+  accountId?: string;
+  createdAt: number;
+}
+
 export type ConnectResult = { ok: true; account: ServerAccount } | { ok: false; error: string };
 
 export class Tracker {
+  private pending = new Map<string, PendingLogin>();
   private inFlight = new Map<string, Promise<void>>();
   private timer: NodeJS.Timeout | null = null;
   lastSyncAllAt: string | null = null;
@@ -124,6 +139,40 @@ export class Tracker {
   }
 
   /* ---------------- Connecting accounts ---------------- */
+
+  /* ---------------- OAuth (Claude / ChatGPT) — keeps accounts alive for weeks ---------------- */
+
+  startOAuth(provider: ProviderType, accountId?: string): { authorizeUrl: string; state: string } {
+    if (provider !== 'claude' && provider !== 'chatgpt') throw new Error('OAuth доступен только для Claude и ChatGPT');
+    for (const [k, v] of this.pending) if (Date.now() - v.createdAt > 15 * 60 * 1000) this.pending.delete(k);
+
+    const verifier = b64url(randomBytes(32));
+    const challenge = b64url(createHash('sha256').update(verifier).digest());
+    const state = b64url(randomBytes(24));
+    this.pending.set(state, { provider, verifier, state, accountId, createdAt: Date.now() });
+    const authorizeUrl =
+      provider === 'claude' ? buildClaudeAuthorizeUrl(challenge, state) : buildChatGPTAuthorizeUrl(challenge, state);
+    return { authorizeUrl, state };
+  }
+
+  async finishOAuth(state: string, input: string): Promise<ConnectResult> {
+    const parsed = parseAuthCode(input);
+    if (!parsed) return { ok: false, error: 'Не удалось прочитать код. Вставьте код со страницы или адрес из строки браузера.' };
+    const pending = this.pending.get(parsed.state || state);
+    if (!pending || (parsed.state && parsed.state !== state)) {
+      return { ok: false, error: 'Код относится к другой попытке входа. Начните вход заново.' };
+    }
+    this.pending.delete(pending.state);
+    try {
+      const creds =
+        pending.provider === 'claude'
+          ? await exchangeClaudeCode(parsed.code, parsed.state, pending.verifier, pending.state)
+          : await exchangeChatGPTCode(parsed.code, pending.verifier);
+      return await this.connect(pending.provider, creds, pending.accountId);
+    } catch (e: any) {
+      return { ok: false, error: e?.message || 'Не удалось завершить вход' };
+    }
+  }
 
   async connectManual(provider: ProviderType, input: string, accountId?: string): Promise<ConnectResult> {
     const parsed = parseManualInput(input, provider);

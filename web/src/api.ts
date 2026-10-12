@@ -40,6 +40,10 @@ export const api = {
   setActive: (id: string, isActive: boolean) => call(`/api/accounts/${id}`, { method: 'PATCH', body: json({ isActive }) }),
   remove: (id: string) => call(`/api/accounts/${id}`, { method: 'DELETE' }),
   reorder: (ids: string[]) => call('/api/accounts/reorder', { method: 'POST', body: json({ ids }) }),
+  oauthStart: (provider: ProviderType, accountId?: string) =>
+    call<{ authorizeUrl: string; state: string }>('/api/oauth/start', { method: 'POST', body: json({ provider, accountId }) }),
+  oauthFinish: (state: string, input: string) =>
+    call<{ ok: true; account: Account }>('/api/oauth/finish', { method: 'POST', body: json({ state, input }) }),
   manual: (provider: ProviderType, input: string, accountId?: string) =>
     call<{ ok: true; account: Account }>('/api/accounts/manual', { method: 'POST', body: json({ provider, input, accountId }) }),
   history: (days: number, accountId?: string) =>

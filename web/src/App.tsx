@@ -821,9 +821,13 @@ const ADD_GROUPS: Array<{ title: string; items: ProviderType[] }> = [
   { title: 'Любой другой сервис', items: ['custom'] },
 ];
 
+const supportsOAuth = (p: ProviderType) => p === 'claude' || p === 'chatgpt';
+
 const AddPage: React.FC<{ accounts: Account[]; go: (to: string) => void; reload: () => Promise<void>; reconnectId?: string }> = ({ accounts, go, reload, reconnectId }) => {
   const reconnect = accounts.find((a) => a.id === reconnectId);
   const [provider, setProvider] = useState<ProviderType | null>(reconnect?.providerType ?? null);
+  const [mode, setMode] = useState<'oauth' | 'manual'>('oauth');
+  const [oauth, setOauth] = useState<{ authorizeUrl: string; state: string } | null>(null);
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
@@ -831,14 +835,31 @@ const AddPage: React.FC<{ accounts: Account[]; go: (to: string) => void; reload:
   useEffect(() => {
     setInput('');
     setErr('');
+    setOauth(null);
+    setMode(provider && supportsOAuth(provider) ? 'oauth' : 'manual');
   }, [provider]);
+
+  const startOAuth = async () => {
+    if (!provider) return;
+    setErr('');
+    try {
+      const r = await api.oauthStart(provider, reconnect?.id);
+      setOauth(r);
+      window.open(r.authorizeUrl, '_blank', 'noopener');
+    } catch (e: any) {
+      setErr(e.message);
+    }
+  };
 
   const submit = async () => {
     if (!provider) return;
     setBusy(true);
     setErr('');
     try {
-      const r = await api.manual(provider, input, reconnect?.id);
+      const r =
+        mode === 'oauth' && oauth
+          ? await api.oauthFinish(oauth.state, input)
+          : await api.manual(provider, input, reconnect?.id);
       await reload();
       go(`/account/${r.account.id}`);
     } catch (e: any) {
@@ -875,20 +896,55 @@ const AddPage: React.FC<{ accounts: Account[]; go: (to: string) => void; reload:
   }
 
   const guide = GUIDES[provider] || DEFAULT_GUIDE;
+  const codePlaceholder = provider === 'claude' ? 'code#state' : 'http://localhost:1455/auth/callback?code=…';
   return (
     <>
       <Header title={reconnect ? `Обновить доступ: ${reconnect.name}` : `Подключить ${PROVIDER_NAMES[provider]}`} back />
-      <div className="stack">
-        <div className="card steps">
-          {guide.steps.map((s, i) => (
-            <div className="step" key={i}><i>{i + 1}</i><div><p className="small">{s}</p></div></div>
-          ))}
+
+      {supportsOAuth(provider) && (
+        <Segmented
+          value={mode}
+          options={[['oauth', 'Вход в аккаунт'], ['manual', 'Вручную (cURL)']]}
+          onChange={(m) => { setMode(m); setErr(''); setInput(''); }}
+        />
+      )}
+
+      {mode === 'oauth' && supportsOAuth(provider) ? (
+        <div className="stack">
+          <div className="card steps">
+            <div className="step"><i>1</i><div className="grow">
+              <b>Откройте вход</b>
+              <p className="small muted">Войдите в {reconnect ? 'нужный' : 'любой'} аккаунт {PROVIDER_NAMES[provider]}. Для второго аккаунта — окно инкогнито или другой профиль браузера. Вход держится неделями и продлевается сам.</p>
+              <button className="btn dark small" onClick={startOAuth} style={{ marginTop: 8 }}>
+                <Icon name="external" size={16} /> {oauth ? 'Открыть ещё раз' : 'Открыть страницу входа'}
+              </button>
+            </div></div>
+            <div className="step"><i>2</i><div className="grow">
+              <b>{provider === 'claude' ? 'Нажмите Authorize и скопируйте код' : 'Скопируйте адрес после входа'}</b>
+              <p className="small muted">{provider === 'claude' ? 'Claude покажет код вида xxxx#yyyy.' : 'Браузер откроет localhost:1455/auth/callback?code=… и покажет ошибку — это нормально, скопируйте весь адрес из строки.'}</p>
+            </div></div>
+            <div className="step"><i>3</i><div className="grow">
+              <b>Вставьте сюда</b>
+              <input value={input} onChange={(e) => setInput(e.target.value)} placeholder={codePlaceholder} disabled={!oauth} style={{ marginTop: 6 }} />
+            </div></div>
+          </div>
+          {err && <p className="error">{err}</p>}
+          <button className="btn dark wide" disabled={!oauth || !input.trim() || busy} onClick={submit}>{busy ? 'Подключаем…' : 'Подключить'}</button>
         </div>
-        <textarea rows={7} value={input} onChange={(e) => setInput(e.target.value)} placeholder={guide.placeholder} />
-        {err && <p className="error">{err}</p>}
-        <button className="btn dark wide" disabled={!input.trim() || busy} onClick={submit}>{busy ? 'Проверяем…' : 'Подключить'}</button>
-        <p className="muted tiny center">Данные шифруются на вашем сервере и отправляются только в {PROVIDER_NAMES[provider]}.</p>
-      </div>
+      ) : (
+        <div className="stack">
+          <div className="card steps">
+            {guide.steps.map((s, i) => (
+              <div className="step" key={i}><i>{i + 1}</i><div><p className="small">{s}</p></div></div>
+            ))}
+          </div>
+          <textarea rows={7} value={input} onChange={(e) => setInput(e.target.value)} placeholder={guide.placeholder} />
+          {supportsOAuth(provider) && <p className="muted tiny">⚠ Вход по cURL/sessionKey живёт недолго (у Claude ~30 мин). Для долгой работы используйте «Вход в аккаунт».</p>}
+          {err && <p className="error">{err}</p>}
+          <button className="btn dark wide" disabled={!input.trim() || busy} onClick={submit}>{busy ? 'Проверяем…' : 'Подключить'}</button>
+        </div>
+      )}
+      <p className="muted tiny center" style={{ marginTop: 10 }}>Данные шифруются на вашем сервере и отправляются только в {PROVIDER_NAMES[provider]}.</p>
     </>
   );
 };

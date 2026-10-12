@@ -175,6 +175,21 @@ async function handleApi(req: IncomingMessage, res: ServerResponse, url: URL) {
     return send(res, 200, { ok: true, intervalMin: tracker.intervalMin() });
   }
 
+  if (path === '/api/oauth/start' && method === 'POST') {
+    const { provider, accountId } = await readBody(req);
+    try {
+      return send(res, 200, tracker.startOAuth(provider, accountId));
+    } catch (e: any) {
+      return send(res, 400, { error: e.message });
+    }
+  }
+
+  if (path === '/api/oauth/finish' && method === 'POST') {
+    const { state, input } = await readBody(req);
+    const result = await tracker.finishOAuth(String(state || ''), String(input || ''));
+    return send(res, result.ok ? 200 : 400, result);
+  }
+
   if (path === '/api/accounts/manual' && method === 'POST') {
     const { provider, input, accountId } = await readBody(req);
     if (!ALL_PROVIDERS.includes(provider)) return send(res, 400, { error: 'Неизвестный сервис' });
