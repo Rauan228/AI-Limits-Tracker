@@ -4,6 +4,8 @@ import { ClaudeProvider, parseClaudeUsage } from '../src/services/providers/Clau
 import { ChatGPTProvider, parseChatGPTUsage } from '../src/services/providers/ChatGPTProvider';
 import { GeminiProvider } from '../src/services/providers/GeminiProvider';
 import { mergeWithPrevious } from '../src/services/providers/common';
+import { applyRecipe, autoDetectWindows, mapWindow, RecipeProvider, resolvePath } from '../src/services/providers/recipe';
+import { getProvider } from '../src/services/providers';
 import { parseAuthCode } from '../src/services/oauth/authCode';
 import { identityFromTokens, isChatGPTCallbackUrl } from '../src/services/oauth/chatgptOAuth';
 import { claudePlanFromProfile, isClaudeCallbackUrl } from '../src/services/oauth/claudeOAuth';
@@ -222,6 +224,59 @@ async function runAllTests() {
     assert(formatTimeRemaining(new Date(Date.now() + (2 * 3600 + 15 * 60) * 1000 + 500).toISOString()) === '2ч 15м', '2ч 15м');
     assert(formatTimeRemaining(new Date(Date.now() + (3 * 86400 + 4 * 3600) * 1000 + 500).toISOString()) === '3д 4ч', '3д 4ч');
     assert(plural(4, ['аккаунт', 'аккаунта', 'аккаунтов']) === 'аккаунта' && plural(11, ['a', 'b', 'c']) === 'c', 'Склонение');
+  }
+
+  console.log('\nSuite 8: Движок рецептов (Cursor/Copilot/Perplexity/… + Custom)');
+  {
+    assert(resolvePath({ a: { b: [{ c: 7 }] } }, 'a.b[0].c') === 7, 'resolvePath: вложенный путь с индексом');
+    assert(resolvePath({ a: 1 }, 'x.y') === undefined, 'resolvePath: отсутствующий путь → undefined');
+
+    // used/limit mapping (Cursor shape)
+    const cursorBody = { 'gpt-4': { numRequests: 125, maxRequestUsage: 500 } };
+    const b = mapWindow(cursorBody, { id: 'p', label: 'Premium', windowType: 'monthly_30d', usedPath: 'gpt-4.numRequests', limitPath: 'gpt-4.maxRequestUsage' })!;
+    assert(b.utilizationPercent === 25 && b.remainingPercent === 75, 'mapWindow: used/limit → 25% использовано');
+    assert(b.details?.used === '125' && b.details?.limit === '500', 'mapWindow: детали used/limit');
+
+    // remaining/limit (Grok/Poe shape)
+    const grok = mapWindow({ remainingQueries: 8, totalQueries: 20 }, { id: 'w', label: 'W', windowType: 'sliding_window', remainingPath: 'remainingQueries', limitPath: 'totalQueries' })!;
+    assert(grok.utilizationPercent === 60, 'mapWindow: remaining/limit → 60% использовано');
+
+    // percent 0-1 with scale
+    const frac = mapWindow({ u: 0.42 }, { id: 'x', label: 'X', windowType: 'sliding_window', usedPercentPath: 'u', percentScale: 1 })!;
+    assert(frac.utilizationPercent === 42, 'mapWindow: доля 0-1 масштабируется в проценты');
+
+    // reset formats
+    const r = mapWindow({ u: 10, reset: 120 }, { id: 'r', label: 'R', windowType: 'sliding_window', usedPercentPath: 'u', resetPath: 'reset', resetFormat: 'seconds_from_now' })!;
+    assert(r.resetsAt !== null && (r.resetSecondsRemaining ?? 0) > 100, 'mapWindow: reset seconds_from_now');
+
+    // auto-detect for custom (arbitrary response)
+    const auto = autoDetectWindows({ limits: { used: 30, limit: 100, resetAt: new Date(Date.now() + 3600e3).toISOString() } });
+    assert(auto.length === 1 && auto[0].utilizationPercent === 30, 'autoDetect: находит used/limit в произвольном JSON');
+    const autoPct = autoDetectWindows({ quota: { utilization: 0.5 } });
+    assert(autoPct.length === 1 && autoPct[0].utilizationPercent === 50, 'autoDetect: находит долю utilization');
+
+    // applyRecipe end-to-end
+    const snap = applyRecipe('acc', 'cursor', { usageUrl: 'x', auth: 'cookie', planPath: 'plan', windows: [{ id: 'p', label: 'P', windowType: 'monthly_30d', usedPath: 'u', limitPath: 'l' }] } as any, { plan: 'Pro', u: 1, l: 4 });
+    assert(snap.status === 'ok' && snap.planName === 'Pro' && snap.buckets[0].utilizationPercent === 25, 'applyRecipe: собирает снапшот + план');
+
+    // registry returns a RecipeProvider for new types
+    assert(getProvider('grok') instanceof RecipeProvider && getProvider('custom') instanceof RecipeProvider, 'Реестр: новые сервисы → RecipeProvider');
+
+    // custom cURL → recipe
+    const customCurl = `curl 'https://api.svc.com/v1/usage' -H 'cookie: session=abc' `;
+    const cm = parseManualInput(customCurl, 'custom');
+    assert(cm.ok && cm.credentials.recipe?.usageUrl === 'https://api.svc.com/v1/usage' && cm.credentials.recipe?.auth === 'cookie', 'Custom: cURL → рецепт с URL и cookie-auth');
+    const cmPost = parseManualInput(`curl 'https://poe.com/api/gql_POST' -H 'authorization: Bearer eyJx.y.z' --data-raw '{"q":1}'`, 'custom');
+    assert(cmPost.ok && cmPost.credentials.recipe?.method === 'POST' && cmPost.credentials.recipe?.body === '{"q":1}' && cmPost.credentials.recipe?.auth === 'bearer', 'Custom: POST + body + bearer');
+
+    // recipe provider cURL extracts cookie
+    const cur = parseManualInput(`curl 'https://cursor.com/api/usage' -H 'cookie: WorkosCursorSessionToken=xyz'`, 'cursor');
+    assert(Boolean(cur.ok && cur.credentials.cookies?.includes('WorkosCursorSessionToken')), 'Cursor: cURL → cookie');
+
+    // needsVerification recipe with no matching fields → honest error, not crash
+    const unverified = await getProvider('mistral').fetchUsage('m', { authType: 'cookie', cookies: 'x=y' });
+    // fetch will fail on network in test env; status is error/reauth, never ok with fake data
+    assert(unverified.snapshot.status !== 'ok', 'Непроверенный рецепт без сети не выдаёт фейковые данные');
   }
 
   console.log('\n========================================');

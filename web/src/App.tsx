@@ -766,7 +766,16 @@ const AccountsPage: React.FC<{ accounts: Account[]; go: (to: string) => void; re
 
 /* ---------------- Add / reconnect ---------------- */
 
-const GUIDES: Record<ProviderType, { steps: string[]; placeholder: string }> = {
+const DEFAULT_GUIDE = {
+  steps: [
+    'Откройте сайт сервиса на компьютере и войдите в нужный аккаунт.',
+    'DevTools (F12) → Network → найдите запрос, который возвращает ваши лимиты.',
+    'Правой кнопкой → Copy → Copy as cURL и вставьте сюда.',
+  ],
+  placeholder: 'curl …',
+};
+
+const GUIDES: Partial<Record<ProviderType, { steps: string[]; placeholder: string }>> = {
   claude: {
     steps: [
       'Откройте claude.ai на компьютере и войдите в нужный аккаунт.',
@@ -791,8 +800,26 @@ const GUIDES: Record<ProviderType, { steps: string[]; placeholder: string }> = {
     ],
     placeholder: "curl 'https://gemini.google.com/_/BardChatUi/data/batchexecute…",
   },
-  custom: { steps: [], placeholder: '' },
+  cursor: {
+    steps: ['Откройте cursor.com/settings и войдите.', 'DevTools → Network → запрос usage → Copy as cURL.', 'Вставьте сюда.'],
+    placeholder: 'curl https://cursor.com/api/usage …',
+  },
+  custom: {
+    steps: [
+      'Откройте сайт сервиса и найдите страницу с лимитами/квотой.',
+      'DevTools → Network → запрос, возвращающий лимиты → Copy as cURL.',
+      'Вставьте — сервер сам найдёт в ответе проценты и время сброса.',
+    ],
+    placeholder: 'curl … (любой сервис)',
+  },
 };
+
+const ADD_GROUPS: Array<{ title: string; items: ProviderType[] }> = [
+  { title: 'Основные', items: ['claude', 'chatgpt', 'gemini'] },
+  { title: 'Кодинг', items: ['cursor', 'copilot'] },
+  { title: 'Чат-ассистенты', items: ['perplexity', 'grok', 'mistral', 'deepseek', 'poe'] },
+  { title: 'Любой другой сервис', items: ['custom'] },
+];
 
 const AddPage: React.FC<{ accounts: Account[]; go: (to: string) => void; reload: () => Promise<void>; reconnectId?: string }> = ({ accounts, go, reload, reconnectId }) => {
   const reconnect = accounts.find((a) => a.id === reconnectId);
@@ -826,15 +853,20 @@ const AddPage: React.FC<{ accounts: Account[]; go: (to: string) => void; reload:
       <>
         <Header title="Добавить аккаунт" back />
         <div className="stack">
-          {(['claude', 'chatgpt', 'gemini'] as ProviderType[]).map((p) => (
-            <button key={p} className="card provider-row" onClick={() => setProvider(p)}>
-              <Logo type={p} size={44} />
-              <div className="grow">
-                <b>{PROVIDER_NAMES[p]}</b>
-                <span className="muted small">{PROVIDER_COMPANY[p]}{accounts.some((a) => a.providerType === p) ? ' · ещё один аккаунт' : ''}</span>
-              </div>
-              <Icon name="chevron" />
-            </button>
+          {ADD_GROUPS.map((g) => (
+            <div key={g.title}>
+              <p className="add-group">{g.title}</p>
+              {g.items.map((p) => (
+                <button key={p} className="card provider-row" onClick={() => setProvider(p)}>
+                  <Logo type={p} size={44} />
+                  <div className="grow">
+                    <b>{PROVIDER_NAMES[p]}</b>
+                    <span className="muted small">{PROVIDER_COMPANY[p]}{accounts.some((a) => a.providerType === p) ? ' · ещё один аккаунт' : ''}</span>
+                  </div>
+                  <Icon name="chevron" />
+                </button>
+              ))}
+            </div>
           ))}
           <p className="info">Можно подключить сколько угодно аккаунтов одного сервиса. Данные каждого аккаунта хранятся отдельно и в зашифрованном виде, а один и тот же аккаунт дважды подключить нельзя.</p>
         </div>
@@ -842,7 +874,7 @@ const AddPage: React.FC<{ accounts: Account[]; go: (to: string) => void; reload:
     );
   }
 
-  const guide = GUIDES[provider];
+  const guide = GUIDES[provider] || DEFAULT_GUIDE;
   return (
     <>
       <Header title={reconnect ? `Обновить доступ: ${reconnect.name}` : `Подключить ${PROVIDER_NAMES[provider]}`} back />

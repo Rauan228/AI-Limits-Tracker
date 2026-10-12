@@ -44,15 +44,28 @@ interface Props {
 
 const supportsOAuth = (p: ProviderType) => p === 'claude' || p === 'chatgpt';
 
-const MANUAL_HINTS: Record<ProviderType, string> = {
+const MANUAL_HINTS: Partial<Record<ProviderType, string>> = {
   claude:
     'Откройте claude.ai в браузере на компьютере → DevTools → Application → Cookies → скопируйте значение sessionKey. Или Network → любой запрос к /api → Copy as cURL.',
   chatgpt:
     'Откройте chatgpt.com/api/auth/session в браузере и скопируйте accessToken, либо Network → запрос к backend-api → Copy as cURL.',
   gemini:
     'Откройте gemini.google.com на компьютере → DevTools → Network → любой запрос batchexecute → Copy as cURL. Для каждого Google-аккаунта нужен свой cURL (из отдельного профиля браузера).',
-  custom: '',
+  cursor:
+    'Откройте cursor.com/settings → DevTools → Network → запрос usage → Copy as cURL.',
+  copilot:
+    'Откройте github.com (с активным Copilot) → DevTools → Network → Copy as cURL запроса к Copilot, либо вставьте токен.',
+  perplexity:
+    'Откройте perplexity.ai → DevTools → Network → запрос к rest/user → Copy as cURL.',
+  grok:
+    'Откройте grok.com → DevTools → Network → запрос rate-limits → Copy as cURL.',
+  mistral: 'Откройте chat.mistral.ai → DevTools → Network → Copy as cURL запроса с вашими лимитами.',
+  deepseek: 'Откройте chat.deepseek.com → DevTools → Network → Copy as cURL запроса профиля/лимитов.',
+  poe: 'Откройте poe.com → DevTools → Network → запрос gql_POST (settings) → Copy as cURL.',
+  custom:
+    'Вставьте cURL запроса, который на сайте сервиса возвращает ваши лимиты (DevTools → Network → Copy as cURL). Приложение само найдёт в ответе проценты и время сброса.',
 };
+const DEFAULT_HINT = 'Вставьте cURL запроса сервиса, который возвращает ваши лимиты.';
 
 export const AccountLoginSheet: React.FC<Props> = ({ visible, providerType, account, onClose, onConnected }) => {
   const connectAccount = useAppStore((s) => s.connectAccount);
@@ -272,7 +285,7 @@ export const AccountLoginSheet: React.FC<Props> = ({ visible, providerType, acco
     <ScrollView contentContainerStyle={{ paddingBottom: 30 }} keyboardShouldPersistTaps="handled">
       <View style={styles.manualHead}>
         <ProviderLogo type={providerType} size={44} />
-        <Text style={styles.manualHint}>{MANUAL_HINTS[providerType]}</Text>
+        <Text style={styles.manualHint}>{MANUAL_HINTS[providerType] || DEFAULT_HINT}</Text>
       </View>
       <TextInput
         style={styles.manualInput}

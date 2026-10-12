@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Text } from 'react-native';
 import Svg, { Path, Line, Defs, LinearGradient, Stop } from 'react-native-svg';
 import { ProviderType } from '../models/types';
+import { Colors, PROVIDER_NAMES } from '../constants/theme';
 
 const CLAUDE_RAYS: Array<[number, number]> = [
   [-90, 10.5], [-58, 9.2], [-28, 10.8], [4, 9.6], [33, 10.6], [62, 9],
@@ -104,42 +105,26 @@ export const ProviderLogo: React.FC<ProviderLogoProps> = ({ type, size = 42 }) =
     );
   }
 
-  // Custom fallback
+  if (type === 'custom') {
+    return (
+      <View style={[styles.container, { width: size, height: size, borderRadius, backgroundColor: '#8b5cf6' }]}>
+        <Svg width={iconSize} height={iconSize} viewBox="0 0 24 24" fill="none">
+          <Path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          <Path d="M2 17L12 22L22 17" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          <Path d="M2 12L12 17L22 12" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        </Svg>
+      </View>
+    );
+  }
+
+  // Monogram for the recipe-driven services (Cursor, Copilot, Perplexity, …)
+  const scheme = Colors[type] || Colors.custom;
+  const letter = (PROVIDER_NAMES[type] || '?').replace(/^GitHub\s+/, '').charAt(0).toUpperCase();
   return (
-    <View
-      style={[
-        styles.container,
-        {
-          width: size,
-          height: size,
-          borderRadius,
-          backgroundColor: '#8b5cf6',
-        },
-      ]}
-    >
-      <Svg width={iconSize} height={iconSize} viewBox="0 0 24 24" fill="none">
-        <Path
-          d="M12 2L2 7L12 12L22 7L12 2Z"
-          stroke="#ffffff"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <Path
-          d="M2 17L12 22L22 17"
-          stroke="#ffffff"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <Path
-          d="M2 12L12 17L22 12"
-          stroke="#ffffff"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </Svg>
+    <View style={[styles.container, { width: size, height: size, borderRadius, backgroundColor: scheme.primary }]}>
+      <Text style={{ color: '#fff', fontWeight: '800', fontSize: Math.round(size * 0.46), letterSpacing: -0.5 }}>
+        {letter}
+      </Text>
     </View>
   );
 };

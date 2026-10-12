@@ -10,10 +10,36 @@ import { Colors, PROVIDER_COMPANY, PROVIDER_NAMES, Radius } from '../constants/t
 import { ProviderType } from '../models/types';
 import { useAppStore } from '../store/useAppStore';
 
-const PROVIDERS: Array<{ type: ProviderType; note: string }> = [
-  { type: 'claude', note: 'Сессия 5ч, неделя, Opus/Sonnet, доп. расход' },
-  { type: 'chatgpt', note: 'Лимиты Codex 5ч и неделя, кредиты' },
-  { type: 'gemini', note: 'Сессия и неделя (через cURL)' },
+const GROUPS: Array<{ title: string; items: Array<{ type: ProviderType; note: string }> }> = [
+  {
+    title: 'Основные',
+    items: [
+      { type: 'claude', note: 'Сессия 5ч, неделя, Opus/Sonnet, доп. расход' },
+      { type: 'chatgpt', note: 'Лимиты Codex 5ч и неделя, кредиты' },
+      { type: 'gemini', note: 'Сессия и неделя (через cURL)' },
+    ],
+  },
+  {
+    title: 'Кодинг',
+    items: [
+      { type: 'cursor', note: 'Premium (fast) запросы' },
+      { type: 'copilot', note: 'Premium-запросы в месяц' },
+    ],
+  },
+  {
+    title: 'Чат-ассистенты',
+    items: [
+      { type: 'perplexity', note: 'Pro-запросы' },
+      { type: 'grok', note: 'Окно запросов' },
+      { type: 'mistral', note: 'Le Chat' },
+      { type: 'deepseek', note: 'Лимиты аккаунта' },
+      { type: 'poe', note: 'Compute points' },
+    ],
+  },
+  {
+    title: 'Любой другой сервис',
+    items: [{ type: 'custom', note: 'Вставьте cURL — лимиты определятся автоматически' }],
+  },
 ];
 
 export default function AddAccountScreen() {
@@ -26,25 +52,30 @@ export default function AddAccountScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         <ScreenHeader title="Добавить аккаунт" />
 
-        {PROVIDERS.map(({ type, note }) => {
-          const existing = accounts.filter((a) => a.providerType === type).length;
-          return (
-            <Card key={type} style={styles.row} onPress={() => setProvider(type)}>
-              <ProviderLogo type={type} size={42} />
-              <View style={{ flex: 1 }}>
-                <Text style={styles.name}>{PROVIDER_NAMES[type]}</Text>
-                <Text style={styles.company}>{PROVIDER_COMPANY[type]}</Text>
-                <Text style={styles.note}>{note}</Text>
-              </View>
-              {existing > 0 && (
-                <View style={styles.badge}>
-                  <Text style={styles.badgeText}>+{existing === 1 ? '2-й' : `${existing + 1}-й`}</Text>
-                </View>
-              )}
-              <ChevronRight size={20} color={Colors.textMuted} />
-            </Card>
-          );
-        })}
+        {GROUPS.map((group) => (
+          <View key={group.title}>
+            <Text style={styles.groupTitle}>{group.title}</Text>
+            {group.items.map(({ type, note }) => {
+              const existing = accounts.filter((a) => a.providerType === type).length;
+              return (
+                <Card key={type} style={styles.row} onPress={() => setProvider(type)}>
+                  <ProviderLogo type={type} size={42} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.name}>{PROVIDER_NAMES[type]}</Text>
+                    <Text style={styles.company}>{PROVIDER_COMPANY[type]}</Text>
+                    <Text style={styles.note}>{note}</Text>
+                  </View>
+                  {existing > 0 && (
+                    <View style={styles.badge}>
+                      <Text style={styles.badgeText}>+{existing === 1 ? '2-й' : `${existing + 1}-й`}</Text>
+                    </View>
+                  )}
+                  <ChevronRight size={20} color={Colors.textMuted} />
+                </Card>
+              );
+            })}
+          </View>
+        ))}
 
         <View style={styles.info}>
           <Info size={16} color={Colors.textMuted} />
@@ -76,6 +107,14 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: 18,
     paddingBottom: 30,
+  },
+  groupTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: Colors.textMuted,
+    marginTop: 18,
+    marginBottom: 10,
+    letterSpacing: 0.2,
   },
   row: {
     flexDirection: 'row',

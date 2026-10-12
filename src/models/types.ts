@@ -1,4 +1,29 @@
-export type ProviderType = 'claude' | 'chatgpt' | 'gemini' | 'custom';
+export type ProviderType =
+  | 'claude'
+  | 'chatgpt'
+  | 'gemini'
+  | 'cursor'
+  | 'copilot'
+  | 'perplexity'
+  | 'grok'
+  | 'mistral'
+  | 'deepseek'
+  | 'poe'
+  | 'custom';
+
+/** The providers that have a dedicated adapter (not the generic recipe engine). */
+export const NATIVE_PROVIDERS: ProviderType[] = ['claude', 'chatgpt', 'gemini'];
+
+/** Providers driven by the generic recipe engine (src/services/providers/recipe.ts). */
+export const RECIPE_PROVIDERS: ProviderType[] = [
+  'cursor',
+  'copilot',
+  'perplexity',
+  'grok',
+  'mistral',
+  'deepseek',
+  'poe',
+];
 
 export type QuotaWindowType = 'session_5h' | 'weekly_7d' | 'monthly_30d' | 'sliding_window' | 'balance';
 
@@ -93,6 +118,53 @@ export interface AccountCredentials {
   apiKey?: string;
   /** Legacy flag from the old in-app browser login; such sessions must be reconnected. */
   webSessionActive?: boolean;
+  /** For 'custom' accounts: the user-defined recipe describing the usage endpoint. */
+  recipe?: ProviderRecipe;
+}
+
+/** How to read a reset timestamp out of the API response. */
+export type ResetFormat = 'iso' | 'unix_s' | 'unix_ms' | 'seconds_from_now' | 'ms_from_now';
+
+/** Describes one limit window within a recipe-driven provider's response. */
+export interface WindowMapping {
+  id: string;
+  label: string;
+  windowType: QuotaWindowType;
+  /** JSON path to a percentage already in 0-100 (or 0-1 with percentScale: 1). */
+  usedPercentPath?: string;
+  /** Or: remaining count + total, to derive the percentage. */
+  remainingPath?: string;
+  usedPath?: string;
+  limitPath?: string;
+  /** 1 means the source value is a 0..1 fraction; 100 means it is already 0..100. */
+  percentScale?: 1 | 100;
+  /** When true the mapped value is "remaining %" rather than "used %". */
+  valueIsRemaining?: boolean;
+  resetPath?: string;
+  resetFormat?: ResetFormat;
+  /** Optional money/credit details for display. */
+  unit?: string;
+}
+
+/**
+ * A declarative description of how to read usage from one service.
+ * Built-in recipes live in services/providers/recipes.ts; 'custom' accounts
+ * carry their own recipe in credentials.recipe.
+ */
+export interface ProviderRecipe {
+  /** Shown in the UI for custom accounts. */
+  title?: string;
+  usageUrl: string;
+  method?: 'GET' | 'POST';
+  body?: string;
+  /** How stored credentials authenticate the request. */
+  auth: 'cookie' | 'bearer';
+  extraHeaders?: Record<string, string>;
+  planPath?: string;
+  emailPath?: string;
+  windows: WindowMapping[];
+  /** true until the endpoint has been confirmed against a real account's cURL. */
+  needsVerification?: boolean;
 }
 
 export interface NotificationSettings {

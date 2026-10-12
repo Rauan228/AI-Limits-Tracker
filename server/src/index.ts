@@ -2,7 +2,7 @@ import { createServer, IncomingMessage, ServerResponse } from 'node:http';
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import { extname, join, normalize, resolve } from 'node:path';
-import type { ProviderType } from '../../src/models/types';
+import { NATIVE_PROVIDERS, type ProviderType, RECIPE_PROVIDERS } from '../../src/models/types';
 import { computeStats, forecastWindow } from '../../src/services/stats';
 import { Store } from './store';
 import { Tracker } from './tracker';
@@ -126,7 +126,7 @@ function serveStatic(req: IncomingMessage, res: ServerResponse, pathname: string
   res.end(readFileSync(file));
 }
 
-const PROVIDERS: ProviderType[] = ['claude', 'chatgpt', 'gemini'];
+const ALL_PROVIDERS: ProviderType[] = [...NATIVE_PROVIDERS, ...RECIPE_PROVIDERS, 'custom'];
 
 /* ---------------- Routes ---------------- */
 
@@ -177,7 +177,7 @@ async function handleApi(req: IncomingMessage, res: ServerResponse, url: URL) {
 
   if (path === '/api/accounts/manual' && method === 'POST') {
     const { provider, input, accountId } = await readBody(req);
-    if (!PROVIDERS.includes(provider)) return send(res, 400, { error: 'Неизвестный сервис' });
+    if (!ALL_PROVIDERS.includes(provider)) return send(res, 400, { error: 'Неизвестный сервис' });
     const result = await tracker.connectManual(provider, String(input || ''), accountId);
     return send(res, result.ok ? 200 : 400, result);
   }
