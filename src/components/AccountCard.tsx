@@ -5,7 +5,7 @@ import { Clock } from 'lucide-react-native';
 import { Colors } from '../constants/theme';
 import { AccountEntity, UsageSnapshot } from '../models/types';
 import { getHistoryFromDb } from '../services/db';
-import { bindingBucket } from '../services/notificationService';
+import { headlineBucket } from '../services/notificationService';
 import { formatClock, formatTimeRemaining } from '../utils/formatters';
 import { MiniBars } from './Charts';
 import { CircularProgress } from './CircularProgress';
@@ -31,9 +31,15 @@ export const AccountCard: React.FC<AccountCardProps> = ({ account, snapshot }) =
     };
   }, [account.id, snapshot?.fetchedAt]);
 
-  const bucket = bindingBucket(snapshot);
+  const bucket = headlineBucket(snapshot);
   const status = accountStatus(account, snapshot);
   const subtitle = [snapshot?.planName || account.plan, account.email].filter(Boolean).join(' · ');
+  // Show the reset countdown only when something is actually used (not at 100% left)
+  const showReset =
+    bucket != null &&
+    bucket.remainingPercent != null &&
+    bucket.remainingPercent < 100 &&
+    Boolean(bucket.resetsAt);
 
   return (
     <Card
@@ -62,11 +68,15 @@ export const AccountCard: React.FC<AccountCardProps> = ({ account, snapshot }) =
       />
 
       <View style={styles.right}>
-        <Text style={styles.resetLabel}>Сброс через</Text>
-        <View style={styles.countdownRow}>
-          <Clock size={12} color={Colors.text} strokeWidth={2.4} />
-          <Text style={styles.countdown}>{formatTimeRemaining(bucket?.resetsAt)}</Text>
-        </View>
+        {showReset && (
+          <>
+            <Text style={styles.resetLabel}>Сброс через</Text>
+            <View style={styles.countdownRow}>
+              <Clock size={12} color={Colors.text} strokeWidth={2.4} />
+              <Text style={styles.countdown}>{formatTimeRemaining(bucket?.resetsAt)}</Text>
+            </View>
+          </>
+        )}
         {snapshot?.isStale ? (
           <Text style={styles.stale}>данные от {formatClock(snapshot.fetchedAt)}</Text>
         ) : (

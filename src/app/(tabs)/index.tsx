@@ -8,7 +8,7 @@ import { Card, EmptyState, PrimaryButton } from '../../components/ui';
 import { Colors, PROVIDER_NAMES, Radius } from '../../constants/theme';
 import { ProviderType } from '../../models/types';
 import { getHistorySince } from '../../services/db';
-import { bindingBucket } from '../../services/notificationService';
+import { headlineBucket } from '../../services/notificationService';
 import { useAppStore } from '../../store/useAppStore';
 import { formatTimeRemaining, greeting, plural, useNow } from '../../utils/formatters';
 
@@ -30,7 +30,7 @@ export default function DashboardScreen() {
     for (const acc of accounts) {
       const snap = snapshots[acc.id];
       if (snap?.status === 'ok') healthy++;
-      const b = bindingBucket(snap);
+      const b = headlineBucket(snap);
       if (b?.utilizationPercent != null) {
         sum += b.utilizationPercent;
         count++;

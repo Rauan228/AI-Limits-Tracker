@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import type { AlertLogEntry, ProviderType, QuotaBucket } from '../../src/models/types';
 import type { Forecast, StatPoint, UsageStats } from '../../src/services/stats';
-import { bindingBucket } from '../../src/services/providers/common';
+import { bindingBucket, headlineBucket } from '../../src/services/providers/common';
 import { accountChartColor, Colors, PROVIDER_COMPANY, PROVIDER_NAMES } from '../../src/constants/theme';
 import { formatTimeRemaining, greeting, MONTHS_SHORT, plural } from '../../src/utils/formatters';
 import { Account, api, ApiError } from './api';
@@ -265,7 +265,7 @@ const HomePage: React.FC<{ state: AppState; go: (to: string) => void; syncing: b
   let nearest: string | null = null;
   for (const a of accounts) {
     if (a.latestSnapshot?.status === 'ok') healthy++;
-    const b = bindingBucket(a.latestSnapshot);
+    const b = headlineBucket(a.latestSnapshot);
     if (b?.utilizationPercent != null) {
       sum += b.utilizationPercent;
       n++;
@@ -332,7 +332,7 @@ const HomePage: React.FC<{ state: AppState; go: (to: string) => void; syncing: b
 
       <div className="cards-grid">
         {visible.map((a) => {
-          const b = bindingBucket(a.latestSnapshot);
+          const b = headlineBucket(a.latestSnapshot);
           return (
             <button key={a.id} className="card account-card" onClick={() => go(`/account/${a.id}`)}>
               <div className="ac-left">
@@ -345,8 +345,12 @@ const HomePage: React.FC<{ state: AppState; go: (to: string) => void; syncing: b
               </div>
               <Ring remaining={b?.remainingPercent ?? null} provider={a.providerType} dim={a.latestSnapshot?.isStale} />
               <div className="ac-right">
-                <span className="muted small">Сброс через</span>
-                <b className="reset"><Icon name="clock" size={13} stroke={2.4} /> {formatTimeRemaining(b?.resetsAt)}</b>
+                {b && b.remainingPercent != null && b.remainingPercent < 100 && b.resetsAt && (
+                  <>
+                    <span className="muted small">Сброс через</span>
+                    <b className="reset"><Icon name="clock" size={13} stroke={2.4} /> {formatTimeRemaining(b.resetsAt)}</b>
+                  </>
+                )}
                 {a.latestSnapshot?.isStale ? (
                   <span className="stale">данные от {clock(a.latestSnapshot.fetchedAt)}</span>
                 ) : (
@@ -397,7 +401,7 @@ const AccountPage: React.FC<{ account: Account; reload: () => Promise<void>; go:
   const [busy, setBusy] = useState(false);
   const [name, setName] = useState(account.name);
   const snap = account.latestSnapshot;
-  const main = bindingBucket(snap);
+  const main = headlineBucket(snap);
   const needsLogin = snap?.status === 'reauth_required' || snap?.status === 'not_configured';
 
   useEffect(() => {

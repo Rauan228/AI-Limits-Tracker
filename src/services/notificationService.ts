@@ -86,7 +86,7 @@ export async function sendLocalAlert(title: string, body: string): Promise<void>
   // Expo Go on Android has no local notifications; the alert is still in the in-app log.
 }
 
-export { bindingBucket } from './providers/common';
+export { bindingBucket, headlineBucket } from './providers/common';
 import { bindingBucket } from './providers/common';
 
 async function alert(account: AccountEntity, kind: AlertKind, title: string, body: string) {

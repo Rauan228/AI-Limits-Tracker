@@ -32,7 +32,7 @@ import { accountStatus, Card, PrimaryButton, ScreenHeader, SectionTitle, Segment
 import { Colors, PROVIDER_NAMES, Radius } from '../../constants/theme';
 import { NotificationSettings, QuotaBucket, UsageHistoryPoint } from '../../models/types';
 import { getHistorySince, getNotificationSettings, updateNotificationSettings } from '../../services/db';
-import { bindingBucket } from '../../services/notificationService';
+import { headlineBucket } from '../../services/notificationService';
 import { useAppStore } from '../../store/useAppStore';
 import { formatClock, formatRelative, formatTimeRemaining, useNow, WEEKDAYS_SHORT } from '../../utils/formatters';
 
@@ -103,7 +103,7 @@ export default function AccountDetailScreen() {
   }
 
   const status = accountStatus(account, snapshot);
-  const main = bindingBucket(snapshot);
+  const main = headlineBucket(snapshot);
   const needsLogin = snapshot?.status === 'reauth_required' || snapshot?.status === 'not_configured';
 
   const onRefresh = async () => {

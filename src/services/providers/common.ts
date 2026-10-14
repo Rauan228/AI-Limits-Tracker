@@ -95,3 +95,17 @@ export function bindingBucket(snapshot: UsageSnapshot | undefined) {
   if (!withNumbers.length) return undefined;
   return withNumbers.reduce((a, b) => ((b.utilizationPercent ?? 0) > (a.utilizationPercent ?? 0) ? b : a));
 }
+
+/**
+ * The headline window shown on the dashboard: the short (5-hour) session if the
+ * provider has one, otherwise whatever limit actually binds. This keeps the main
+ * card number focused on "how much of my current session is left" rather than the
+ * weekly window, which is what people glance at most.
+ */
+export function headlineBucket(snapshot: UsageSnapshot | undefined) {
+  if (!snapshot) return undefined;
+  const session = snapshot.buckets.find(
+    (b) => b.windowType === 'session_5h' && b.utilizationPercent !== null
+  );
+  return session || bindingBucket(snapshot);
+}

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import type { ProviderType } from '../../src/models/types';
 import { PROVIDER_NAMES, remainingColor } from '../../src/constants/theme';
-import { bindingBucket } from '../../src/services/providers/common';
+import { headlineBucket } from '../../src/services/providers/common';
 import { formatTimeRemaining } from '../../src/utils/formatters';
 import { loadStore, PROVIDERS, setEnabled, syncProvider, TrackedAccount, updateBadge } from './core';
 import { Logo, Ring } from './widgets';
@@ -52,7 +52,7 @@ function App() {
       <div className="list">
         {PROVIDERS.map((p) => {
           const acc = accounts[p];
-          const b = bindingBucket(acc?.snapshot);
+          const b = headlineBucket(acc?.snapshot);
           const enabled = acc?.enabled !== false;
           return (
             <div key={p} className={`row ${enabled ? '' : 'off'}`}>
