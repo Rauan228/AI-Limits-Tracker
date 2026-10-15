@@ -277,8 +277,8 @@ async function handleApi(req: IncomingMessage, res: ServerResponse, url: URL) {
       startedAt: prev?.startedAt || now,
       updatedAt: now,
     });
-    // Push once when an agent finishes or starts waiting for input
-    if ((status === 'done' || status === 'waiting') && prev?.status !== status) {
+    // Push once when an agent finishes or starts waiting for input (unless a silent sync)
+    if (!b.silent && (status === 'done' || status === 'waiting') && prev?.status !== status) {
       const label = status === 'done' ? '✅ Агент закончил' : '⏳ Агент ждёт ввода';
       const firstLine = (b.lastMessage ? String(b.lastMessage) : '').split('\n').find((l: string) => l.trim()) || '';
       void notify(`${label}: ${project}`, firstLine.slice(0, 200));
