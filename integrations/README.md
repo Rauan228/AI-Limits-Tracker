@@ -16,17 +16,18 @@ systemctl restart aitracker
 grep API_TOKEN /opt/ai-limits-tracker/server/.env   # copy this value
 ```
 
-## 2. Laptop: set two env vars
+## 2. Laptop: install the reporter
 
-Point the script at your panel and token. Put these in your shell profile
-(`~/.bashrc`, `~/.zshrc`, or Windows: System → Environment Variables):
+Copy `report-agent.mjs` somewhere stable, e.g. `~/.ai-limits/report-agent.mjs`
+(on Windows an ASCII path like `C:/Users/Public/ai-limits/` avoids issues with
+non-Latin usernames). Put a `config.json` **next to it**:
 
-```bash
-export ALT_URL="https://aitracker.178.88.115.213.sslip.io"
-export ALT_TOKEN="<the API_TOKEN from step 1>"
+```json
+{ "url": "https://aitracker.178.88.115.213.sslip.io", "token": "<API_TOKEN from step 1>" }
 ```
 
-Copy `report-agent.mjs` somewhere stable, e.g. `~/.ai-limits/report-agent.mjs`.
+(Alternatively set `ALT_URL` and `ALT_TOKEN` as environment variables — the env
+vars win over the file.)
 
 ## 3. Claude Code — add hooks
 
@@ -35,14 +36,19 @@ In `~/.claude/settings.json` (applies to every project), add:
 ```json
 {
   "hooks": {
-    "UserPromptSubmit": [{ "hooks": [{ "type": "command", "command": "node ~/.ai-limits/report-agent.mjs" }] }],
-    "Notification":     [{ "hooks": [{ "type": "command", "command": "node ~/.ai-limits/report-agent.mjs" }] }],
-    "Stop":             [{ "hooks": [{ "type": "command", "command": "node ~/.ai-limits/report-agent.mjs" }] }],
-    "SubagentStop":     [{ "hooks": [{ "type": "command", "command": "node ~/.ai-limits/report-agent.mjs" }] }],
-    "SessionEnd":       [{ "hooks": [{ "type": "command", "command": "node ~/.ai-limits/report-agent.mjs" }] }]
+    "UserPromptSubmit": [{ "hooks": [{ "type": "command", "command": "node \"C:/Users/Public/ai-limits/report-agent.mjs\"" }] }],
+    "Notification":     [{ "hooks": [{ "type": "command", "command": "node \"C:/Users/Public/ai-limits/report-agent.mjs\"" }] }],
+    "Stop":             [{ "hooks": [{ "type": "command", "command": "node \"C:/Users/Public/ai-limits/report-agent.mjs\"" }] }],
+    "SubagentStop":     [{ "hooks": [{ "type": "command", "command": "node \"C:/Users/Public/ai-limits/report-agent.mjs\"" }] }],
+    "SessionEnd":       [{ "hooks": [{ "type": "command", "command": "node \"C:/Users/Public/ai-limits/report-agent.mjs\"" }] }]
   }
 }
 ```
+
+If your `settings.json` already has hooks (e.g. managed by another tool), **append**
+this reporter as an extra entry to each event's array rather than replacing — Claude
+Code runs every hook registered for an event. Already-open sessions load hooks at
+start, so restart them (or open a new window) for the hooks to take effect.
 
 - `UserPromptSubmit` → status **working** (you just gave it a task)
 - `Notification` → status **waiting** (needs your input / a permission)

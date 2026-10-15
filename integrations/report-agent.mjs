@@ -16,10 +16,22 @@
  */
 import process from 'node:process';
 import { readFileSync } from 'node:fs';
-import { basename } from 'node:path';
+import { basename, dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { homedir } from 'node:os';
 
-const URL_BASE = (process.env.ALT_URL || '').replace(/\/$/, '');
-const TOKEN = process.env.ALT_TOKEN || '';
+// Config comes from env vars, or a config.json next to this script, or ~/.ai-limits/config.json
+// Shape: {"url":"https://your-panel","token":"..."}
+let fileCfg = {};
+for (const dir of [dirname(fileURLToPath(import.meta.url)), join(homedir(), '.ai-limits')]) {
+  try {
+    fileCfg = JSON.parse(readFileSync(join(dir, 'config.json'), 'utf8'));
+    break;
+  } catch {}
+}
+
+const URL_BASE = (process.env.ALT_URL || fileCfg.url || '').replace(/\/$/, '');
+const TOKEN = process.env.ALT_TOKEN || fileCfg.token || '';
 
 function readStdin() {
   try {
