@@ -1,5 +1,9 @@
 # Watch your coding agents from your phone
 
+**Remote Codex chat:** to send tasks, stream replies, stop work and approve actions
+from this panel, follow [CODEX-REMOTE.md](CODEX-REMOTE.md). This is independent of
+the read-only status reporter below.
+
 Report the status of **Claude Code** and **Codex** sessions (working / waiting / done)
 plus the agent's last message to your AI Limits Tracker server, and see them in the
 panel's **Agents** tab on your phone. Get a push when an agent finishes.

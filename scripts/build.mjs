@@ -78,4 +78,9 @@ async function buildExtension() {
 
 if (want('server')) await buildServer();
 if (want('web')) await buildWeb();
+if (want('remote')) await build({
+  ...common, minify: false, entryPoints: [join(root, 'integrations/codex-remote.ts')],
+  outfile: join(root, 'integrations/dist/codex-remote.mjs'),
+  platform: 'node', format: 'esm', target: 'node22', define: {},
+});
 if (want('extension') && existsSync(join(root, 'extension/src/background.ts'))) await buildExtension();

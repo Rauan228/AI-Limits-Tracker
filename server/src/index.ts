@@ -7,6 +7,7 @@ import { computeStats, forecastWindow } from '../../src/services/stats';
 import { notify } from './notify';
 import { Store } from './store';
 import { Tracker } from './tracker';
+import { RemoteHub, RemoteRoutes } from './remote';
 
 const PORT = Number(process.env.PORT) || 8795;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '';
@@ -53,11 +54,16 @@ function parseCookies(req: IncomingMessage): Record<string, string> {
 function isAuthed(req: IncomingMessage): boolean {
   const bearer = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
   if (API_TOKEN && bearer && safeEqual(bearer, API_TOKEN)) return true;
+  return isBrowserAuthed(req);
+}
+
+function isBrowserAuthed(req: IncomingMessage): boolean {
   const raw = parseCookies(req).alt_session;
   if (!raw) return false;
   const [issued, sig] = raw.split('.');
   if (!issued || !sig || !safeEqual(sig, sign(issued))) return false;
-  return Date.now() - Number(issued) < SESSION_DAYS * 86400 * 1000;
+  const age = Date.now() - Number(issued);
+  return age >= 0 && age < SESSION_DAYS * 86400 * 1000;
 }
 
 const loginAttempts = new Map<string, { count: number; first: number }>();
@@ -79,12 +85,12 @@ function send(res: ServerResponse, status: number, body: unknown, headers: Recor
   res.end(JSON.stringify(body));
 }
 
-async function readBody(req: IncomingMessage): Promise<any> {
+async function readBody(req: IncomingMessage, max = 256 * 1024): Promise<any> {
   const chunks: Buffer[] = [];
   let size = 0;
   for await (const c of req) {
     size += (c as Buffer).length;
-    if (size > 256 * 1024) throw new Error('Body too large');
+    if (size > max) throw new Error('Body too large');
     chunks.push(c as Buffer);
   }
   if (!chunks.length) return {};
@@ -129,11 +135,21 @@ function serveStatic(req: IncomingMessage, res: ServerResponse, pathname: string
 
 const ALL_PROVIDERS: ProviderType[] = [...NATIVE_PROVIDERS, ...RECIPE_PROVIDERS, 'custom'];
 
+const remote = new RemoteRoutes(new RemoteHub(store), {
+  secret: APP_SECRET,
+  hasSession: isBrowserAuthed,
+  verifyPassword: password => safeEqual(password, ADMIN_PASSWORD),
+  rateLimit: tooManyAttempts,
+  readBody,
+});
+
 /* ---------------- Routes ---------------- */
 
 async function handleApi(req: IncomingMessage, res: ServerResponse, url: URL) {
   const path = url.pathname;
   const method = req.method || 'GET';
+
+  if (await remote.handle(req, res, url)) return;
 
   if (path === '/api/health') return send(res, 200, { ok: true });
 
@@ -316,7 +332,7 @@ const server = createServer(async (req, res) => {
   }
 });
 
-server.listen(PORT, () => {
+server.listen(PORT, process.env.HOST || '127.0.0.1', () => {
   console.log(`AI Limits Tracker server on :${PORT} (data: ${DATA_DIR}, web: ${WEB_DIR})`);
   tracker.start();
 });

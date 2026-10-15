@@ -1,6 +1,7 @@
 import type { AgentSession, AlertLogEntry, ProviderType } from '../../src/models/types';
 import type { Forecast, StatPoint, UsageStats } from '../../src/services/stats';
 import type { AccountEntity } from '../../src/models/types';
+import type { RemoteCommand, RemoteHost, RemoteHostState } from '../../src/models/remote';
 
 export type Account = AccountEntity;
 
@@ -53,6 +54,13 @@ export const api = {
       `/api/stats?days=${days}&tz=${encodeURIComponent(Intl.DateTimeFormat().resolvedOptions().timeZone)}`
     ),
   agents: () => call<{ agents: AgentSession[] }>('/api/agents'),
+  remoteStatus: () => call<{ unlocked: boolean; hosts: RemoteHost[] }>('/api/remote/status'),
+  remoteUnlock: (password: string) => call('/api/remote/unlock', { method: 'POST', body: json({ password }) }),
+  remoteLock: () => call('/api/remote/lock', { method: 'POST' }),
+  remotePair: () => call<{ code: string; expiresAt: number }>('/api/remote/pair', { method: 'POST' }),
+  remoteHost: (id: string) => call<RemoteHostState>(`/api/remote/hosts/${encodeURIComponent(id)}`),
+  remoteRevoke: (id: string) => call(`/api/remote/hosts/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+  remoteCommand: (hostId: string, id: string, command: RemoteCommand) => call(`/api/remote/hosts/${encodeURIComponent(hostId)}/command`, { method: 'POST', body: json({ id, command }) }),
   removeAgent: (id: string) => call(`/api/agents/${encodeURIComponent(id)}`, { method: 'DELETE' }),
   alerts: () => call<{ alerts: AlertLogEntry[] }>('/api/alerts'),
   clearAlerts: () => call('/api/alerts', { method: 'DELETE' }),

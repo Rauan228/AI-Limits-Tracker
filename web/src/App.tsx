@@ -6,6 +6,7 @@ import { accountChartColor, Colors, PROVIDER_COMPANY, PROVIDER_NAMES } from '../
 import { formatTimeRemaining, greeting, MONTHS_SHORT, plural } from '../../src/utils/formatters';
 import { Account, api, ApiError } from './api';
 import { BarChart, Donut, Icon, LineChart, Logo, MiniBars, Ring, Segmented, StatusDot } from './ui';
+import RemotePage from './RemotePage';
 
 /* ---------------- Router ---------------- */
 
@@ -127,6 +128,9 @@ export default function App() {
     case 'agents':
       page = <AgentsPage />;
       break;
+    case 'remote':
+      page = <RemotePage initialThreadId={param} />;
+      break;
     case 'accounts':
       page = <AccountsPage accounts={accounts} go={go} reload={load} syncing={syncing} onRefresh={refreshAll} />;
       break;
@@ -143,7 +147,7 @@ export default function App() {
       page = <HomePage state={state} go={go} syncing={syncing} onRefresh={refreshAll} />;
   }
 
-  const tab = !path ? 'home' : path === 'account' ? 'home' : path;
+  const tab = !path ? 'home' : path === 'account' ? 'home' : path === 'remote' ? 'agents' : path;
   return (
     <div className="shell">
       <nav className="sidebar">
@@ -1042,6 +1046,7 @@ const AgentCard: React.FC<{ a: AgentSession; onRemove?: () => void; expanded?: b
       {a.lastMessage && (
         <p className={`agent-msg ${open ? 'open' : ''}`} onClick={() => setOpen((o) => !o)}>{a.lastMessage}</p>
       )}
+      {a.source === 'codex' && <a className="btn remote-open" href={`#/remote/${encodeURIComponent(a.id.replace(/^codex:/, ''))}`}>Открыть чат Codex <Icon name="chevron" size={16} /></a>}
       {onRemove && (
         <button className="agent-remove" onClick={onRemove} aria-label="Убрать">×</button>
       )}
@@ -1056,7 +1061,7 @@ const AgentsPage: React.FC = () => {
       <Header
         title="Агенты"
         sub="Claude Code и Codex на твоих машинах"
-        right={<button className="icon-btn" onClick={reload} aria-label="Обновить"><Icon name="refresh" /></button>}
+        right={<div className="row"><a className="btn dark" href="#/remote">Чат Codex</a><button className="icon-btn" onClick={reload} aria-label="Обновить"><Icon name="refresh" /></button></div>}
       />
       {!agents ? (
         <div className="splash small"><div className="spinner" /></div>

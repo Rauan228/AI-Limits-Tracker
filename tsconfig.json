@@ -22,6 +22,8 @@
     "server",
     "web",
     "extension",
-    "landing"
+    "landing",
+    "integrations",
+    "tests/remote.test.ts"
   ]
 }

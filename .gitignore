@@ -49,3 +49,6 @@ extension/dist/
 server/.env
 data/
 *.tgz
+integrations/dist/
+integrations/*.config.json
+.local-remote/
