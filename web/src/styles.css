@@ -288,3 +288,28 @@ button.card:active { transform: scale(0.985); background: #f7f6f2; }
 
 .add-group{font-size:12.5px;font-weight:700;color:var(--muted);margin:16px 0 8px;letter-spacing:.2px}
 .add-group:first-child{margin-top:0}
+
+/* Agents */
+.only-mobile{display:none}
+@media (max-width:959px){.only-mobile{display:grid}}
+.agents-strip{margin-bottom:20px}
+.section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.section-head h2{display:flex;align-items:center;gap:8px;margin:0}
+.agents-count{font-size:11px;font-weight:700;color:#166534;background:var(--ok-soft);padding:2px 8px;border-radius:999px}
+.agent-card{position:relative;padding:14px 16px;margin-bottom:10px}
+.agent-head{display:flex;align-items:center;gap:11px;cursor:pointer}
+.agent-badge{width:34px;height:34px;border-radius:10px;flex:none;display:grid;place-items:center;color:#fff;font-weight:800;font-size:14px;background:#5d3fd3}
+.agent-badge.claude{background:#e2683c}
+.agent-badge.codex{background:#18181b}
+.agent-head b{font-size:15px}
+.agent-status{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;white-space:nowrap;padding:5px 10px;border-radius:999px}
+.agent-status.working{color:#166534;background:var(--ok-soft)}
+.agent-status.waiting{color:#b45309;background:#fdf3e1}
+.agent-status.done{color:#1f6feb;background:#e8f0fe}
+.agent-status.idle{color:var(--muted);background:var(--card-hi)}
+.agent-status .pulse{width:7px;height:7px;border-radius:50%;background:#16a34a;animation:pulse 1.3s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.5)}}
+.agent-msg{margin:12px 0 0;font-size:13px;line-height:1.5;color:var(--muted);white-space:pre-wrap;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;cursor:pointer;border-top:1px solid var(--border-subtle);padding-top:10px}
+.agent-msg.open{-webkit-line-clamp:unset;max-height:50vh;overflow:auto}
+.agent-remove{position:absolute;top:10px;right:12px;width:22px;height:22px;border-radius:50%;color:var(--subtle);font-size:16px;line-height:1}
+.agent-remove:hover{background:var(--card-hi);color:var(--text)}

@@ -1,4 +1,4 @@
-import type { AlertLogEntry, ProviderType } from '../../src/models/types';
+import type { AgentSession, AlertLogEntry, ProviderType } from '../../src/models/types';
 import type { Forecast, StatPoint, UsageStats } from '../../src/services/stats';
 import type { AccountEntity } from '../../src/models/types';
 
@@ -52,6 +52,8 @@ export const api = {
     call<{ stats: UsageStats; forecasts: Record<string, Forecast> }>(
       `/api/stats?days=${days}&tz=${encodeURIComponent(Intl.DateTimeFormat().resolvedOptions().timeZone)}`
     ),
+  agents: () => call<{ agents: AgentSession[] }>('/api/agents'),
+  removeAgent: (id: string) => call(`/api/agents/${encodeURIComponent(id)}`, { method: 'DELETE' }),
   alerts: () => call<{ alerts: AlertLogEntry[] }>('/api/alerts'),
   clearAlerts: () => call('/api/alerts', { method: 'DELETE' }),
   setInterval: (intervalMin: number) => call('/api/settings', { method: 'PUT', body: json({ intervalMin }) }),

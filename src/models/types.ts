@@ -187,6 +187,27 @@ export interface UsageHistoryPoint {
   fetchedAt: string;
 }
 
+/** Live status of a coding agent (Claude Code / Codex) running on a machine. */
+export type AgentStatus = 'working' | 'waiting' | 'done' | 'idle';
+
+export type AgentSource = 'claude' | 'codex' | 'other';
+
+export interface AgentSession {
+  id: string;
+  source: AgentSource;
+  /** Short project / folder name. */
+  project: string;
+  cwd?: string;
+  /** Optional human label: first prompt, git branch, or window name. */
+  title?: string;
+  status: AgentStatus;
+  /** Last assistant message text (trimmed). */
+  lastMessage?: string;
+  model?: string;
+  startedAt: string;
+  updatedAt: string;
+}
+
 export type AlertKind = 'low20' | 'low10' | 'exhausted' | 'restored' | 'reauth';
 
 export interface AlertLogEntry {
